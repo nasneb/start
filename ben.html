@@ -43,15 +43,22 @@
     padding: 6vw;
   }
 
-  .card {
-    background: var(--green);
-    padding: 3rem 3rem 3.5rem;
+  .content {
     max-width: 780px;
+  }
+
+  /* the trick: inline background that wraps with the text,
+     using box-decoration-break so each line gets its own padded box */
+  .hl {
+    background: var(--green);
     color: var(--fg);
+    padding: 0.15em 0.35em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    line-height: 1.9; /* breathing room so lines don't touch */
   }
 
   h1 {
-    font-family: 'Major Mono Display', monospace;
     font-size: clamp(2rem, 5.5vw, 4rem);
     font-weight: 400;
     letter-spacing: -0.02em;
@@ -59,20 +66,19 @@
     margin-bottom: 0.6em;
     text-transform: lowercase;
   }
+  h1 .hl { line-height: 1.2; }
 
   h2 {
-    font-family: 'Major Mono Display', monospace;
     font-size: clamp(0.9rem, 1.4vw, 1.1rem);
     font-weight: 400;
     letter-spacing: 0.05em;
     margin-bottom: 1.8em;
     text-transform: lowercase;
   }
+  h2 .hl { line-height: 1.6; }
 
   p {
-    font-family: 'Major Mono Display', monospace;
     font-size: clamp(0.95rem, 1.3vw, 1.15rem);
-    line-height: 1.6;
     text-transform: lowercase;
   }
 
@@ -81,7 +87,6 @@
     bottom: 1.5rem;
     left: 6vw;
     z-index: 1;
-    font-family: 'Major Mono Display', monospace;
     font-size: 0.75rem;
     color: rgba(245, 245, 245, 0.5);
     letter-spacing: 0.08em;
@@ -90,7 +95,6 @@
 
   @media (max-width: 600px) {
     main { padding: 6vw; }
-    .card { padding: 2rem 1.75rem 2.25rem; }
     footer { left: 6vw; }
   }
 </style>
@@ -100,13 +104,13 @@
 <canvas id="bg"></canvas>
 
 <main>
-  <div class="card">
-    <h1>Ruben Santos</h1>
-    <h2>Designer &amp; Lecturer</h2>
+  <div class="content">
+    <h1><span class="hl">Ruben Santos</span></h1>
+    <h2><span class="hl">Designer &amp; Lecturer</span></h2>
     <p>
-      Designer and Lecturer at Escola Superior de Artes e Design, Caldas da Rainha.
+      <span class="hl">Designer and Lecturer at Escola Superior de Artes e Design, Caldas da Rainha.
       Develops motion design projects for cinema, television, theater and site-specific
-      installations. Explores emerging technologies and innovative pedagogical methodologies.
+      installations. Explores emerging technologies and innovative pedagogical methodologies.</span>
     </p>
   </div>
 </main>
