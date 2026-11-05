@@ -8,9 +8,11 @@
 (function () {
   'use strict';
 
-  const CSV_URL = 'works.csv';
+  // o CSV vem do atributo data-csv da lista (works.csv em trabalhos, academia.csv em academia)
+  const CSV_URL = document.getElementById('works').dataset.csv || 'works.csv';
   const PLACEHOLDERS = new Set(['', 'xxx', 'yyy', 'zzz']);
-  const ICONS = ['motion-design', 'video-mapping', '3d', 'video', 'tech', 'film-credits', 'cenografia-digital'];
+  const ICONS = ['motion-design', 'video-mapping', '3d', 'video', 'tech', 'film-credits', 'cenografia-digital',
+    'artigo', 'conferencia', 'tese', 'workshop'];
   // devolve o primeiro cabeçalho existente da lista
   const col = (r, ...names) => { for (const n of names) if (r[n] != null) return r[n]; return ''; };
 
@@ -51,9 +53,17 @@
     const vm = src.match(/vimeo\.com\/(\d+)/);
     if (yt || vm) {
       const url = yt ? `https://www.youtube-nocookie.com/embed/${yt[1]}` : `https://player.vimeo.com/video/${vm[1]}`;
-      return el('div', { class: 'embed' }, el('iframe', {
+      const box = el('div', { class: 'embed' }, el('iframe', {
         src: url, title, loading: 'lazy', allow: 'autoplay; fullscreen; picture-in-picture', allowfullscreen: ''
       }));
+      // proporção: 1) indicada no CSV com #r=4:3 no fim do URL; 2) Vimeo: lida automaticamente; 3) 16:9 por defeito
+      const r = src.match(/#r=(\d+(?:\.\d+)?)[:x/](\d+(?:\.\d+)?)/);
+      if (r) box.style.setProperty('--ratio', `${r[1]} / ${r[2]}`);
+      else if (vm) fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent('https://vimeo.com/' + vm[1])}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(j => { if (j && j.width && j.height) box.style.setProperty('--ratio', `${j.width} / ${j.height}`); })
+        .catch(() => {});
+      return box;
     }
     if (/\.(mp4|webm|mov)$/i.test(src)) {
       // poster opcional: ficheiro com o mesmo nome + "-poster.jpg"
@@ -71,7 +81,9 @@
       const typeSlug = slug(w.type);
       // só o ícone; o nome da categoria fica disponível como texto alternativo e tooltip
       const icon = w.type
-        ? el('img', { class: 'icon', src: `media/icons/${ICONS.includes(typeSlug) ? typeSlug : 'default'}.svg`, alt: w.type, title: w.type })
+        ? el('span', { class: 'icon', role: 'img', 'aria-label': w.type, title: w.type,
+            // URL absoluto: dentro de uma variável CSS, um caminho relativo seria resolvido a partir de css/
+            style: `--src: url("${new URL(`media/icons/${ICONS.includes(typeSlug) ? typeSlug : 'default'}.svg`, document.baseURI).href}")` })
         : el('span');
       const summary = el('summary', {}, [
         el('span', { class: 'title t-h3' }, w.title),
@@ -104,7 +116,7 @@
     const types = [...new Set(items.map(w => w.type).filter(Boolean))].sort();
     if (types.length < 2) return;
     ['todos', ...types].forEach((t, i) => {
-      const b = el('button', { type: 'button', 'aria-pressed': i === 0 ? 'true' : 'false' }, t);
+      const b = el('button', { type: 'button', class: 't-label', 'aria-pressed': i === 0 ? 'true' : 'false' }, t);
       b.addEventListener('click', () => {
         box.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
         document.querySelectorAll('.work').forEach(d => {
